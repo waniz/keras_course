@@ -1,0 +1,55 @@
+1. Simple introduction
+  - installing (Ubuntu, MacOS, Windows)
+  - how to switch to Tensorflow (Theano)
+
+2. Very first net
+  - Dense
+  - Hidden layers
+  - Metrics
+  - Save / load, best weights (continue training with initial_epoch option)
+  - Fitting
+
+3. A bit more complicated
+  - activation
+  - dropout
+  - normalisation (why to use it in real life)
+  - objectives
+  - callbacks
+
+5. Recurrent layers
+  - where to use
+  - Simple RNN
+  - GRU
+  - LSTM
+    - text generation
+    mistake pass:
+        - http://stackoverflow.com/questions/23257587/how-can-i-avoid-value-errors-when-using-numpy-random-multinomial
+
+4. Convolutional NN
+  - where to use
+  - CIFAR-10
+  - MNIST
+
+6. Ideas for realisation:
+  - deep dream
+  - neural-doodle
+  - play games (https://github.com/matthiasplappert/keras-rl)
+
+
+https://github.com/fchollet/keras/tree/master/examples
+https://github.com/jakebian/quiver
+
+http://karpathy.github.io/2015/05/21/rnn-effectiveness/
+https://github.com/karpathy/char-rnn
+http://www.cs.virginia.edu/~vicente/recognition/notebooks/kerasLSTM.html
+
+http://www.cs.virginia.edu/~vicente/recognition/
+
+Tutorial:
+https://github.com/leriomaggio/deep-learning-keras-tensorflow
+
+https://github.com/fchollet/hualos
+https://github.com/Vict0rSch/deep_learning
+
+https://github.com/savarin/neural-networks
+https://beneyal.github.io/data-science-rnn/
