@@ -3,7 +3,7 @@ import re
 from keras.models import Sequential
 from keras.layers import Dropout
 from keras.callbacks import ModelCheckpoint
-from keras.layers import Dense, TimeDistributed, Activation
+from keras.layers import Dense
 from keras.layers import LSTM
 from keras.optimizers import RMSprop
 import random
@@ -14,7 +14,7 @@ filename = "data/star_wars.txt"
 raw_text = open(filename, encoding="utf-8").read()
 raw_text = raw_text.lower()
 
-raw_text_ru = re.sub("[^а-я,\n .!–?]", "", raw_text)
+raw_text_ru = re.sub("[^а-я, .]", "", raw_text)
 
 chars = sorted(list(set(raw_text_ru)))
 char_to_int = dict((c, i) for i, c in enumerate(chars))
@@ -32,34 +32,32 @@ next_chars = []
 for i in range(0, len(raw_text_ru) - maxlen, step):
     sentences.append(raw_text_ru[i: i + maxlen])
     next_chars.append(raw_text_ru[i + maxlen])
-sentences = sentences[:3482100]
-sentences = sentences[:200000]
-print('nb sequences:', len(sentences))
+train_sentences = sentences[:600000]
+val_sentences = sentences[700000:800000]
+print('nb sequences:', len(train_sentences))
 
 
 print('Vectorization...')
-X = np.zeros((len(sentences), maxlen, len(chars)), dtype=np.bool)
-y = np.zeros((len(sentences), len(chars)), dtype=np.bool)
-for i, sentence in enumerate(sentences):
+X = np.zeros((len(train_sentences), maxlen, len(chars)), dtype=np.bool)
+y = np.zeros((len(train_sentences), len(chars)), dtype=np.bool)
+for i, sentence in enumerate(train_sentences):
     for t, char in enumerate(sentence):
         X[i, t, char_to_int[char]] = 1
     y[i, char_to_int[next_chars[i]]] = 1
 
+X_val = np.zeros((len(val_sentences), maxlen, len(chars)), dtype=np.bool)
+y_val = np.zeros((len(val_sentences), len(chars)), dtype=np.bool)
+for i, sentence in enumerate(val_sentences):
+    for t, char in enumerate(sentence):
+        X_val[i, t, char_to_int[char]] = 1
+    y_val[i, char_to_int[next_chars[i]]] = 1
+
 print('Build model...')
 model = Sequential()
-<<<<<<< HEAD
-=======
-
->>>>>>> 1a28cf7dc35c9db33bca2a98b43cd7eb94cfd261
 model.add(LSTM(128, batch_input_shape=(100, maxlen, len(chars)), return_sequences=True))
-model.add(Dropout(0.2))
-model.add(LSTM(128, batch_input_shape=(100, maxlen, len(chars)), return_sequences=False))
-model.add(Dropout(0.2))
+model.add(Dropout(0.5))
+model.add(LSTM(256, batch_input_shape=(100, maxlen, len(chars)), return_sequences=False))
 model.add(Dense(128))
-<<<<<<< HEAD
-=======
-
->>>>>>> 1a28cf7dc35c9db33bca2a98b43cd7eb94cfd261
 model.add(Dense(output_dim=len(chars), activation='softmax'))
 optimizer = RMSprop(lr=0.01)
 
@@ -68,19 +66,24 @@ optimizer = RMSprop(lr=0.01)
 
 model.compile(loss='categorical_crossentropy', optimizer=optimizer)
 
-filepath = "models/star_wars/weights_{epoch:03d}_{loss:.4f}.hdf5"
-checkpoint = ModelCheckpoint(filepath, monitor='loss', verbose=1, save_best_only=False, mode='min')
-
 
 def sample(a, temperature=1.0):
     a = np.log(a)/temperature
     a = np.exp(a)/np.sum(np.exp(a))
+    if sum(a) > 1.0:
+        a *= 1 - (sum(a) - 1)
+        if sum(a) > 1.0:
+            a *= 0.9999
     return np.argmax(np.random.multinomial(1, a, 1))
 
 for iteration in range(1, 100):
     print("==============================================================")
     print("Iteration: ", iteration)
-    # model.model.fit(X, y, batch_size=100, nb_epoch=1, callbacks=[checkpoint], shuffle=False)
+
+    filepath = "models/star_wars/weights_%s_{loss:.4f}.hdf5" % iteration
+    checkpoint = ModelCheckpoint(filepath, monitor='loss', verbose=1, save_best_only=False, mode='min')
+    model.model.fit(X, y, batch_size=100, nb_epoch=1, callbacks=[checkpoint], shuffle=False,
+                    validation_data=(X_val, y_val))
 
     start_index = random.randint(0, len(raw_text_ru) - maxlen - 1)
     for T in [0.2, 0.5, 1.0]:

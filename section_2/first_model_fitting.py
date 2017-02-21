@@ -33,8 +33,8 @@ def fit_model(neirons=1):
 
 
 model = KerasClassifier(build_fn=fit_model, nb_epoch=100, batch_size=10, verbose=0)
-neirons = [1, 2, 3, 4, 5, 6, 7, 8]
-param_grid = dict(neirons=neirons)
+neurons = [1, 2, 3, 4, 5, 6, 7, 8]
+param_grid = dict(neirons=neurons)
 grid = GridSearchCV(estimator=model, param_grid=param_grid, n_jobs=-1)
 grid_result = grid.fit(x_train, y_train)
 

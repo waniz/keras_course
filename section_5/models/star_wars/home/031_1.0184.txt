@@ -1,0 +1,17 @@
+print('Build model...')
+model = Sequential()
+model.add(LSTM(256, batch_input_shape=(batch_size, maxlen, len(chars)), return_sequences=True))
+model.add(Dropout(0.25))
+model.add(LSTM(512, batch_input_shape=(batch_size, maxlen, len(chars)), return_sequences=True))
+model.add(LSTM(512, batch_input_shape=(batch_size, maxlen, len(chars)), return_sequences=False))
+model.add(Dense(320))
+model.add(Dense(output_dim=len(chars), activation='softmax'))
+optimizer = RMSprop()
+model.summary()
+
+maxlen = 40
+step = 3
+batch_size = 128
+
+sentences = sentences[:3482100]
+sentences = sentences[:3456000]

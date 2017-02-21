@@ -14,7 +14,7 @@ filename = "data/star_wars.txt"
 raw_text = open(filename, encoding="utf-8").read()
 raw_text = raw_text.lower()
 
-raw_text_ru = re.sub("[^а-я,\n .!?]", "", raw_text)
+raw_text_ru = re.sub("[^а-я,\n .]", "", raw_text)
 
 chars = sorted(list(set(raw_text_ru)))
 char_to_int = dict((c, i) for i, c in enumerate(chars))
@@ -34,10 +34,9 @@ next_chars = []
 for i in range(0, len(raw_text_ru) - maxlen, step):
     sentences.append(raw_text_ru[i: i + maxlen])
     next_chars.append(raw_text_ru[i + maxlen])
-sentences = sentences[:3482100]
-sentences = sentences[:3456000]
 print('nb sequences:', len(sentences))
-
+sentences = sentences[:3541760]
+print('nb sequences:', len(sentences))
 
 print('Vectorization...')
 X = np.zeros((len(sentences), maxlen, len(chars)), dtype=np.bool)
@@ -47,10 +46,11 @@ for i, sentence in enumerate(sentences):
         X[i, t, char_to_int[char]] = 1
     y[i, char_to_int[next_chars[i]]] = 1
 
+
 print('Build model...')
 model = Sequential()
 model.add(LSTM(256, batch_input_shape=(batch_size, maxlen, len(chars)), return_sequences=True))
-model.add(Dropout(0.25))
+model.add(Dropout(0.35))
 model.add(LSTM(512, batch_input_shape=(batch_size, maxlen, len(chars)), return_sequences=True))
 model.add(LSTM(512, batch_input_shape=(batch_size, maxlen, len(chars)), return_sequences=False))
 model.add(Dense(320))
@@ -58,13 +58,10 @@ model.add(Dense(output_dim=len(chars), activation='softmax'))
 optimizer = RMSprop()
 model.summary()
 
-filename = "models/star_wars/home/weights_000_1.0515.hdf5"
-model.load_weights(filename)
+# filename = "models/star_wars/home/weights_031_1.0184.hdf5"
+# model.load_weights(filename)
 
 model.compile(loss='categorical_crossentropy', optimizer=optimizer)
-
-filepath = "models/star_wars/home/weights_{epoch:03d}_{loss:.4f}.hdf5"
-checkpoint = ModelCheckpoint(filepath, monitor='loss', verbose=1, save_best_only=False, mode='min')
 
 
 def sample(a, temperature=1.0):
@@ -78,6 +75,9 @@ def sample(a, temperature=1.0):
 
 
 for iteration in range(1, 100):
+    filepath = "models/star_wars/home/weights_%s_{loss:.4f}.hdf5" % iteration
+    checkpoint = ModelCheckpoint(filepath, monitor='loss', verbose=1, save_best_only=False, mode='min')
+
     print("==============================================================")
     print("Iteration: ", iteration)
     model.model.fit(X, y, batch_size=batch_size, nb_epoch=1, callbacks=[checkpoint], shuffle=False)
